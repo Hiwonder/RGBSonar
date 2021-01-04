@@ -1,0 +1,9 @@
+{
+	"RGBSonar.RGBMode.rgb|block":"彩灯模式",
+	"RGBSonar.RGBMode.breathing|block":"呼吸灯模式",
+	"RGBSonar.RGBNum.left|block":"左边",
+	"RGBSonar.RGBNum.right|block":"右边",
+	"RGBSonar.RGBNum.all|block":"全部",
+	"RGBSonar.SETRGB|block":"设置LED|%mode |%index 颜色|%r|%g|%b",
+	"RGBSonar.GETDISTANCE|block":"获取超声波测距值(mm)"
+}

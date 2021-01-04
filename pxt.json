@@ -1,0 +1,23 @@
+{
+    "name": "RGBSonar",
+    "version": "0.0.1",
+    "description": "Blocks for RGBSonar",
+    "license": "MIT",
+    "dependencies": {
+        "core": "*"
+    },
+    "files": [
+        "RGBSonar.ts",
+        "README.md",
+        "_locales/zh/RGBSonar-strings.json",
+        "_locales/zh/RGBSonar-jsdoc-strings.json"
+    ],
+    "testFiles": [
+        "test.ts"
+    ],
+    "supportedTargets": [
+        "microbit"
+    ],
+    "public": true,
+    "preferredEditor": "tsprj"
+}

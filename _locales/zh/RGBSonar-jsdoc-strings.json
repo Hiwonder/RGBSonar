@@ -1,0 +1,4 @@
+{
+	"RGBSonar.SETRGB":"设置led的模式，数量以及颜色，当为呼吸灯模式时，颜色值表示呼吸周期，单位秒",
+	"RGBSonar.GETDISTANCE":"获取超声波测得的距离，单位毫米"
+}
