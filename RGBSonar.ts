@@ -66,12 +66,12 @@ namespace RGBSonar {
         if (!WireWriteByte(addr, reg)) {
             return -1;
         }
-
-        let buf3 = II2Cread(addr);
-        if (buf3.length != 1) {
-            return 0;
+        let val = pins.i2cReadBuffer(addr, 2);
+        if (val[1] == 255) {
+            val[1] = 0;
         }
-        return buf3[0];
+        let dis = 0xffff & (val[0] | (0xff00 & (val[1] << 8)));
+        return dis;
     }
 
     //% weight=100 blockId=SETRGB block="Set Mode|%mode LED|%index RGB|%r|%g|%b"
