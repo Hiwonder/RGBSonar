@@ -34,21 +34,18 @@ namespace RGBSonar {
         all = 2,
     }
 
-    function II2Cread(reg: number): Buffer {
-        let val = pins.i2cReadBuffer(reg, 1);
-        return val;
+    function i2cwrite(adress: number, reg: number, value: number) {
+        let buf = pins.createBuffer(2);
+        buf[0] = reg;
+        buf[1] = value;
+        pins.i2cWriteBuffer(adress, buf);
     }
 
-    function WireWriteByte(addr: number, val: number): boolean {
-        let buf = pins.createBuffer(1);
-        buf[0] = val;
-        let rvalue = pins.i2cWriteBuffer(addr, buf);
-        if (rvalue != 0) {
-            return false;
-        }
-        return true;
-    }	
-
+    function i2cread(adress: number, reg: number): number {
+        pins.i2cWriteNumber(adress, reg, NumberFormat.UInt8BE);
+        let val = pins.i2cReadNumber(adress, NumberFormat.UInt8BE);
+        return val;
+    }
 
     function WireWriteDataArray(addr: number, reg: number, val: number): boolean {
         let buf2 = pins.createBuffer(3);
@@ -62,74 +59,63 @@ namespace RGBSonar {
         return true;
     }
 
-    function WireReadDataArray(addr: number, reg: number, len: number): number {
-        if (!WireWriteByte(addr, reg)) {
-            return -1;
-        }
-        let val = pins.i2cReadBuffer(addr, 2);
-        if (val[1] == 255) {
-            val[1] = 0;
-        }
-        let dis = 0xffff & (val[0] | (0xff00 & (val[1] << 8)));
-        return dis;
-    }
-
     //% weight=100 blockId=SETRGB block="Set Mode|%mode LED|%index RGB|%r|%g|%b"
     //% inlineInputMode=inline
     export function SETRGB(mode: RGBMode, index: RGBNum, r: number, g: number, b: number) {
-         WireWriteDataArray(Sonar_I2C_ADDR, RGB_MODE, mode);
-        let start_reg = 3;  
-        
-        if (mode == RGBMode.breathing) {         
-            start_reg = 9;
-            r = r * 10;
-            g = g * 10;
-            b = b * 10;        
-        }
-        else {
-            if (r == 0 && g == 0 && b == 0) {
-                let buf4 = pins.createBuffer(7); 
-                buf4[0] = 0x09;
-                buf4[1] = 0x00;
-                buf4[2] = 0x00;
-                buf4[3] = 0x00;
-                buf4[4] = 0x00;
-                buf4[5] = 0x00;
-                buf4[6] = 0x00;
-                pins.i2cWriteBuffer(Sonar_I2C_ADDR, buf4);
-            }
-        }
-        if (index != RGBNum.all) { 
-            let buf5 = pins.createBuffer(4);
-            if (index == RGBNum.left && mode == RGBMode.rgb) {
-                start_reg = 6;
-            } 
-            else if (index == RGBNum.left && mode == RGBMode.breathing) {
-                start_reg = 12;
-            }                     
-            buf5[0] = start_reg & 0xff;
-            buf5[1] = r & 0xff;
-            buf5[2] = g & 0xff;
-            buf5[3] = b & 0xff;
-            pins.i2cWriteBuffer(Sonar_I2C_ADDR, buf5);
-        }
-        else {
-            let buf6 = pins.createBuffer(7); 
-            buf6[0] = start_reg & 0xff;
-            buf6[1] = r & 0xff;
-            buf6[2] = g & 0xff;
-            buf6[3] = b & 0xff;
-            buf6[4] = r & 0xff;
-            buf6[5] = g & 0xff;
-            buf6[6] = b & 0xff;
-            pins.i2cWriteBuffer(Sonar_I2C_ADDR, buf6);
-        }      
-    }
+        WireWriteDataArray(Sonar_I2C_ADDR, RGB_MODE, mode);
+       let start_reg = 3;  
+       
+       if (mode == RGBMode.breathing) {         
+           start_reg = 9;
+           r = r * 10;
+           g = g * 10;
+           b = b * 10;        
+       }
+       else {
+           if (r == 0 && g == 0 && b == 0) {
+               let buf4 = pins.createBuffer(7); 
+               buf4[0] = 0x09;
+               buf4[1] = 0x00;
+               buf4[2] = 0x00;
+               buf4[3] = 0x00;
+               buf4[4] = 0x00;
+               buf4[5] = 0x00;
+               buf4[6] = 0x00;
+               pins.i2cWriteBuffer(Sonar_I2C_ADDR, buf4);
+           }
+       }
+       if (index != RGBNum.all) { 
+           let buf5 = pins.createBuffer(4);
+           if (index == RGBNum.left && mode == RGBMode.rgb) {
+               start_reg = 6;
+           } 
+           else if (index == RGBNum.left && mode == RGBMode.breathing) {
+               start_reg = 12;
+           }                     
+           buf5[0] = start_reg & 0xff;
+           buf5[1] = r & 0xff;
+           buf5[2] = g & 0xff;
+           buf5[3] = b & 0xff;
+           pins.i2cWriteBuffer(Sonar_I2C_ADDR, buf5);
+       }
+       else {
+           let buf6 = pins.createBuffer(7); 
+           buf6[0] = start_reg & 0xff;
+           buf6[1] = r & 0xff;
+           buf6[2] = g & 0xff;
+           buf6[3] = b & 0xff;
+           buf6[4] = r & 0xff;
+           buf6[5] = g & 0xff;
+           buf6[6] = b & 0xff;
+           pins.i2cWriteBuffer(Sonar_I2C_ADDR, buf6);
+       }      
+   }
 
     //% weight=99 blockId=GETDISTANCE block="Get Distance"
     export function GETDISTANCE():number {
-        let distance = WireReadDataArray(Sonar_I2C_ADDR, 0, 2);
+        let distance = i2cread(Sonar_I2C_ADDR, 0) + i2cread(Sonar_I2C_ADDR, 1) * 256;
+        if (distance > 65500)
+            distance = 0
         return distance;
     }
-
 }
